@@ -28,9 +28,25 @@ type Message struct {
 	SentTime     int
 	IsSubscriber bool
 	TmiSentTime  int
-	IsTurbo      string
+	IsTurbo      bool
 	UserId       int
 	UserType     string
+}
+
+// @badges=premium/1;color=;display-name=u_lost;emotes=;message-id=18;thread-id=108938100_159925790;turbo=1;user-id=108938100;user-type= :u_lost!u_lost@u_lost.tmi.twitch.tv WHISPER streamwars_bot :yo
+
+type Whisper struct {
+	Badges    string
+	Color     string
+	From      string
+	Emotes    string
+	MessageID int
+	ThreadID  string
+	IsTurbo   bool
+	UserID    int
+	UserType  string
+	To        string
+	Payload   string
 }
 
 type Event struct {
@@ -100,7 +116,7 @@ func parseNotice(channel string, msgID string, message string) *Notice {
 
 	return &Notice{
 		Channel:   strings.Trim(channel, "#"),
-		MessageID: fieldMap[messageID],
+		MessageID: fieldMap[msgID],
 		Message:   message,
 	}
 }
@@ -164,6 +180,22 @@ func parseRoomStateFields(channel string, state string) *RoomState {
 	}
 }
 
+func parseWhisper(channel string, to string, message string, payload string) *Whisper {
+	fieldMap := getFieldMap(message)
+
+	return &Whisper{
+		Badges:    fieldMap[badges],
+		Color:     fieldMap[color],
+		From:      fieldMap[displayName],
+		Emotes:    fieldMap[emotes],
+		IsTurbo:   getBoolFromString(fieldMap[turbo]),
+		MessageID: getIntFromString(fieldMap[messageID]),
+		Payload:   payload,
+		ThreadID:  fieldMap[threadID],
+		To:        to,
+	}
+}
+
 func parseMessageFields(chn string, msg string, payload string) *Message {
 	fieldMap := getFieldMap(msg)
 
@@ -180,7 +212,7 @@ func parseMessageFields(chn string, msg string, payload string) *Message {
 		SentTime:     getIntFromString(fieldMap[sentTS]),
 		IsSubscriber: getBoolFromString(fieldMap[subscriber]),
 		TmiSentTime:  getIntFromString(fieldMap[tmiSentTS]),
-		IsTurbo:      fieldMap[turbo],
+		IsTurbo:      getBoolFromString(fieldMap[turbo]),
 		UserId:       getIntFromString(fieldMap[userID]),
 		UserType:     fieldMap[userType],
 	}

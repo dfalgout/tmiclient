@@ -2,6 +2,7 @@ package tmiclient
 
 import (
 	"bufio"
+	"log"
 	"net"
 	"net/textproto"
 	"strings"
@@ -21,13 +22,14 @@ var (
 		"notice",
 		"roomstate",
 		"globaluserstate",
+		"whisper",
 	}
 )
 
 func handleMessage(t *TMI, msg string) {
 	// split the msg by spaces
 	msgParts := strings.Split(msg, " ")
-	// log.Println(msgParts)
+	log.Println(msgParts)
 
 	if msgParts[0] == "PING" {
 		t.send("PONG " + msgParts[1])
@@ -83,6 +85,14 @@ func handleMessage(t *TMI, msg string) {
 			payload := strings.TrimPrefix(strings.Join(msgParts[4:], " "), ":")
 
 			t.invokeHandlers("msg", parseMessageFields(channel, message, payload))
+			break
+		case "whisper":
+			channel := getUserName(msgParts[1])
+			to := msgParts[3]
+			message := msgParts[0]
+			payload := strings.TrimPrefix(strings.Join(msgParts[4:], " "), ":")
+
+			t.invokeHandlers("whisper", parseWhisper(channel, to, message, payload))
 			break
 		case "roomstate":
 			channel := msgParts[3]
