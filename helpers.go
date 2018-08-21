@@ -9,7 +9,7 @@ import (
 func isin(value string, values []string) bool {
 	value = strings.ToLower(value)
 	for _, v := range values {
-		if value == v {
+		if value == strings.ToLower(v) {
 			return true
 		}
 	}
